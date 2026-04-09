@@ -12,29 +12,30 @@ import {
   ListChecks,
   EuroIcon,
   ExternalLink,
+  CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const gold = "text-[color:var(--gold)]";
 
 const priorityLabel = {
-  immediate: { label: "Immediate",          color: "bg-red-500/15 text-red-400" },
+  immediate: { label: "Immediate",           color: "bg-red-500/15 text-red-400" },
   short:     { label: "Short-term (1–6 mo)", color: "bg-orange-500/15 text-orange-400" },
   long:      { label: "Long-term (6–18 mo)", color: "bg-blue-500/15 text-blue-400" },
 };
 
-const gapSeverityStyle: Record<GapSeverity, string> = {
-  critical:    "border-red-500/40 bg-red-500/12 text-red-400",
-  high:        "border-orange-500/40 bg-orange-500/12 text-orange-400",
-  medium:      "border-yellow-500/40 bg-yellow-500/12 text-yellow-400",
-  low:         "border-green-500/40 bg-green-500/12 text-green-400",
+const gapConfig: Record<GapSeverity, { stripe: string; badge: string; label: string }> = {
+  critical:    { stripe: "bg-red-500",    badge: "text-red-400 border-red-500/40",       label: "Critical"  },
+  high:        { stripe: "bg-orange-500", badge: "text-orange-400 border-orange-500/40", label: "High"      },
+  medium:      { stripe: "bg-yellow-500", badge: "text-yellow-400 border-yellow-500/40", label: "Medium"    },
+  low:         { stripe: "bg-green-500",  badge: "text-green-400 border-green-500/40",   label: "Low"       },
 };
 
-const safeguardStatusStyle: Record<SafeguardStatus, string> = {
-  critical:    "border-red-500/40 bg-red-500/12 text-red-400",
-  required:    "border-orange-500/40 bg-orange-500/12 text-orange-400",
-  recommended: "border-yellow-500/40 bg-yellow-500/12 text-yellow-400",
-  implemented: "border-green-500/40 bg-green-500/12 text-green-400",
+const safeguardConfig: Record<SafeguardStatus, { stripe: string; badge: string; label: string }> = {
+  critical:    { stripe: "bg-red-500",    badge: "text-red-400 border-red-500/40",       label: "Critical"    },
+  required:    { stripe: "bg-orange-500", badge: "text-orange-400 border-orange-500/40", label: "Required"    },
+  recommended: { stripe: "bg-yellow-500", badge: "text-yellow-400 border-yellow-500/40", label: "Recommended" },
+  implemented: { stripe: "bg-green-500",  badge: "text-green-400 border-green-500/40",   label: "Implemented" },
 };
 
 function formatEur(n: number) {
@@ -153,28 +154,21 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
               Compliance Gaps
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {result.complianceGaps.map((gap, i) => (
-                <span
-                  key={i}
-                  className={cn(
-                    "inline-flex items-center rounded-full border px-3 py-1.5 text-sm",
-                    gapSeverityStyle[gap.severity]
-                  )}
-                >
-                  {gap.text}
-                </span>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-border/50">
-              {(["critical", "high", "medium", "low"] as GapSeverity[]).map((s) => (
-                <span key={s} className="flex items-center gap-1.5 text-xs text-foreground/50">
-                  <span className={cn("inline-block h-2 w-2 rounded-full border", gapSeverityStyle[s])} />
-                  {s.charAt(0).toUpperCase() + s.slice(1)}
-                </span>
-              ))}
-            </div>
+          <CardContent className="px-0 pb-0">
+            <ul className="divide-y divide-border/60">
+              {result.complianceGaps.map((gap, i) => {
+                const cfg = gapConfig[gap.severity];
+                return (
+                  <li key={i} className="flex items-center gap-4 px-6 py-3.5">
+                    <span className={cn("w-1 self-stretch rounded-full shrink-0", cfg.stripe)} />
+                    <span className="flex-1 text-sm text-foreground leading-snug">{gap.text}</span>
+                    <span className={cn("shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-semibold", cfg.badge)}>
+                      {cfg.label}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
           </CardContent>
         </Card>
       )}
@@ -188,28 +182,24 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
               Required Safeguards
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {result.requiredSafeguards.map((s, i) => (
-                <span
-                  key={i}
-                  className={cn(
-                    "inline-flex items-center rounded-full border px-3 py-1.5 text-sm",
-                    safeguardStatusStyle[s.status]
-                  )}
-                >
-                  {s.text}
-                </span>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-border/50">
-              {(["critical", "required", "recommended", "implemented"] as SafeguardStatus[]).map((s) => (
-                <span key={s} className="flex items-center gap-1.5 text-xs text-foreground/50">
-                  <span className={cn("inline-block h-2 w-2 rounded-full border", safeguardStatusStyle[s])} />
-                  {s.charAt(0).toUpperCase() + s.slice(1)}
-                </span>
-              ))}
-            </div>
+          <CardContent className="px-0 pb-0">
+            <ul className="divide-y divide-border/60">
+              {result.requiredSafeguards.map((s, i) => {
+                const cfg = safeguardConfig[s.status];
+                return (
+                  <li key={i} className="flex items-center gap-4 px-6 py-3.5">
+                    <span className={cn("w-1 self-stretch rounded-full shrink-0", cfg.stripe)} />
+                    {s.status === "implemented" ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
+                    ) : null}
+                    <span className="flex-1 text-sm text-foreground leading-snug">{s.text}</span>
+                    <span className={cn("shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-semibold", cfg.badge)}>
+                      {cfg.label}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
           </CardContent>
         </Card>
       )}

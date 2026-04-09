@@ -14,6 +14,8 @@ import {
   FileSearch,
   UserCheck,
   Scale,
+  XCircle,
+  CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -184,17 +186,19 @@ export function GdprReport({ result }: GdprReportProps) {
               Violations &amp; Gaps
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
+          <CardContent className="px-0 pb-0">
+            <ul className="divide-y divide-border/60">
               {result.violations.map((v, i) => (
-                <span
-                  key={i}
-                  className="inline-flex items-center rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-sm text-red-400"
-                >
-                  {v}
-                </span>
+                <li key={i} className="flex items-center gap-4 px-6 py-3.5">
+                  <span className="w-1 self-stretch rounded-full shrink-0 bg-red-500" />
+                  <XCircle className="h-4 w-4 text-red-500 shrink-0" />
+                  <span className="flex-1 text-sm text-foreground leading-snug">{v}</span>
+                  <span className="shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-semibold text-red-400 border-red-500/40">
+                    Violation
+                  </span>
+                </li>
               ))}
-            </div>
+            </ul>
           </CardContent>
         </Card>
       )}
@@ -208,17 +212,19 @@ export function GdprReport({ result }: GdprReportProps) {
               Required Measures
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
+          <CardContent className="px-0 pb-0">
+            <ul className="divide-y divide-border/60">
               {result.requiredMeasures.map((m, i) => (
-                <span
-                  key={i}
-                  className="inline-flex items-center rounded-full border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/8 px-3 py-1.5 text-sm text-foreground/90"
-                >
-                  {m}
-                </span>
+                <li key={i} className="flex items-center gap-4 px-6 py-3.5">
+                  <span className="w-1 self-stretch rounded-full shrink-0 bg-orange-500" />
+                  <CheckCircle2 className="h-4 w-4 text-orange-400 shrink-0" />
+                  <span className="flex-1 text-sm text-foreground leading-snug">{m}</span>
+                  <span className="shrink-0 rounded-full border px-2.5 py-0.5 text-xs font-semibold text-orange-400 border-orange-500/40">
+                    Required
+                  </span>
+                </li>
               ))}
-            </div>
+            </ul>
           </CardContent>
         </Card>
       )}
