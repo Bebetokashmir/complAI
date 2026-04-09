@@ -89,10 +89,21 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
           <CardContent>
             <div className="flex flex-wrap gap-2">
               {result.applicableArticles.map((a) => {
-                const info = ARTICLE_INFO[a];
-                const Tag = info ? "a" : "span";
-                const linkProps = info
-                  ? { href: info.url, target: "_blank", rel: "noopener noreferrer" }
+                // Try exact match first, then extract article number from start of string
+                let info = ARTICLE_INFO[a];
+                if (!info) {
+                  const match = a.match(/^(Art(?:icle)?\.?\s*\d+(?:\(\d+\))?(?:\([a-z]\))?)/i);
+                  if (match) info = ARTICLE_INFO[match[1].trim()] ?? ARTICLE_INFO[match[1].replace(/\s+/g, " ").trim()];
+                }
+                // Fallback: build EUR-Lex link from any article number found
+                const numMatch = a.match(/\d+/);
+                const fallbackUrl = numMatch
+                  ? `https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=OJ:L_202401689#art_${numMatch[0]}`
+                  : null;
+                const url = info?.url ?? fallbackUrl;
+                const Tag = url ? "a" : "span";
+                const linkProps = url
+                  ? { href: url, target: "_blank", rel: "noopener noreferrer" }
                   : {};
                 return (
                   <Tag
@@ -101,7 +112,7 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
                     className="group inline-flex items-center gap-1.5 rounded-full border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/8 px-3 py-1.5 text-sm font-medium text-[color:var(--gold)] hover:bg-[color:var(--gold)]/15 hover:border-[color:var(--gold)]/60 transition-all"
                   >
                     {a}
-                    {info && (
+                    {url && (
                       <ExternalLink className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
                     )}
                   </Tag>
