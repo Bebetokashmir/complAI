@@ -77,10 +77,10 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="divide-y divide-border rounded-lg border border-border overflow-hidden">
+            <div className="flex flex-wrap gap-2">
               {result.applicableArticles.map((a) => {
                 const info = ARTICLE_INFO[a];
-                const Tag = info ? "a" : "div";
+                const Tag = info ? "a" : "span";
                 const linkProps = info
                   ? { href: info.url, target: "_blank", rel: "noopener noreferrer" }
                   : {};
@@ -88,20 +88,11 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
                   <Tag
                     key={a}
                     {...linkProps}
-                    className="group flex items-center justify-between px-4 py-3 bg-card hover:bg-muted/50 transition-colors"
+                    className="group inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/8 px-3 py-1.5 text-sm font-medium text-primary hover:bg-primary/15 hover:border-primary/60 transition-all cursor-pointer"
                   >
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm font-bold font-mono text-primary w-28 shrink-0">
-                        {a}
-                      </span>
-                      {info?.description && (
-                        <span className="text-sm text-muted-foreground">
-                          {info.description}
-                        </span>
-                      )}
-                    </div>
+                    {a}
                     {info && (
-                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary shrink-0 ml-3 transition-colors" />
+                      <ExternalLink className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
                     )}
                   </Tag>
                 );
