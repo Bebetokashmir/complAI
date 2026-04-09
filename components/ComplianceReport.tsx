@@ -143,14 +143,16 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2.5">
+            <div className="flex flex-wrap gap-2">
               {result.complianceGaps.map((gap, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-foreground">
-                  <ChevronRight className="h-4 w-4 mt-0.5 shrink-0 text-foreground/40" />
+                <span
+                  key={i}
+                  className="inline-flex items-center rounded-full border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/8 px-3 py-1.5 text-sm text-foreground/90"
+                >
                   {gap}
-                </li>
+                </span>
               ))}
-            </ul>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -165,14 +167,16 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-2.5">
+            <div className="flex flex-wrap gap-2">
               {result.requiredSafeguards.map((s, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-foreground">
-                  <ChevronRight className="h-4 w-4 mt-0.5 shrink-0 text-foreground/40" />
+                <span
+                  key={i}
+                  className="inline-flex items-center rounded-full border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/8 px-3 py-1.5 text-sm text-foreground/90"
+                >
                   {s}
-                </li>
+                </span>
               ))}
-            </ul>
+            </div>
           </CardContent>
         </Card>
       )}
