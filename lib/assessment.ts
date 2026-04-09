@@ -5,8 +5,18 @@ export const AssessmentSchema = z.object({
   riskLevel: z.enum(["unacceptable", "high", "limited", "minimal"]),
   riskReason: z.string(),
   applicableArticles: z.array(z.string()),
-  complianceGaps: z.array(z.string()),
-  requiredSafeguards: z.array(z.string()),
+  complianceGaps: z.array(
+    z.object({
+      text: z.string(),
+      severity: z.enum(["critical", "high", "medium", "low"]),
+    })
+  ),
+  requiredSafeguards: z.array(
+    z.object({
+      text: z.string(),
+      status: z.enum(["critical", "required", "recommended", "implemented"]),
+    })
+  ),
   recommendedActions: z.array(
     z.object({
       priority: z.enum(["immediate", "short", "long"]),
@@ -46,14 +56,22 @@ Voluntary codes of conduct recommended.
 Provide a structured compliance assessment with:
 1. Risk classification (unacceptable/high/limited/minimal)
 2. Justification referencing specific articles
-3. Compliance gaps (what is missing from the project?)
-4. Required safeguards for the identified risk level
+3. Compliance gaps — each with a severity:
+   - "critical": must be fixed immediately, risk of prohibition or heavy fine
+   - "high": serious gap that needs addressing before deployment
+   - "medium": notable gap, should be resolved in the short term
+   - "low": minor improvement recommended
+4. Required safeguards — each with a status:
+   - "critical": mandatory and not yet in place, poses immediate risk
+   - "required": mandatory for the risk level, not yet implemented
+   - "recommended": not mandatory but strongly advised
+   - "implemented": already in place (include positive findings too)
 5. Recommended actions (immediate = within 1 month, short = 1–6 months, long = 6–18 months)
 6. Estimated compliance costs in EUR (low/high range):
    - Minimal: €2,000–€10,000 (documentation)
    - Limited: €5,000–€25,000
    - High: €50,000–€500,000 (audit, documentation, systems, legal)
-   - Unacceptable: N/A (prohibited)
+   - Unacceptable: N/A (set both to 0)
 7. Summary in 2–3 sentences
 
 Respond exclusively in the requested JSON format. Be specific and practically applicable for a startup.`;

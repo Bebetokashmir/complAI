@@ -1,40 +1,34 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RiskBadge } from "@/components/RiskBadge";
-import { RISK_LEVELS, ARTICLE_INFO } from "@/lib/ai-act";
-import type { AssessmentResult, GapSeverity, SafeguardStatus } from "@/types/assessment";
+import { GDPR_STATUS, GDPR_ARTICLE_INFO } from "@/lib/gdpr";
+import type { GdprAssessmentResult } from "@/types/gdpr";
 import {
-  ShieldAlert,
+  ShieldCheck,
   BookOpen,
   AlertTriangle,
   Lock,
   ListChecks,
   EuroIcon,
   ExternalLink,
+  FileSearch,
+  UserCheck,
+  Scale,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const gold = "text-[color:var(--gold)]";
 
 const priorityLabel = {
-  immediate: { label: "Immediate",          color: "bg-red-500/15 text-red-400" },
+  immediate: { label: "Immediate",           color: "bg-red-500/15 text-red-400" },
   short:     { label: "Short-term (1–6 mo)", color: "bg-orange-500/15 text-orange-400" },
   long:      { label: "Long-term (6–18 mo)", color: "bg-blue-500/15 text-blue-400" },
 };
 
-const gapSeverityStyle: Record<GapSeverity, string> = {
-  critical:    "border-red-500/40 bg-red-500/12 text-red-400",
-  high:        "border-orange-500/40 bg-orange-500/12 text-orange-400",
-  medium:      "border-yellow-500/40 bg-yellow-500/12 text-yellow-400",
-  low:         "border-green-500/40 bg-green-500/12 text-green-400",
-};
-
-const safeguardStatusStyle: Record<SafeguardStatus, string> = {
-  critical:    "border-red-500/40 bg-red-500/12 text-red-400",
-  required:    "border-orange-500/40 bg-orange-500/12 text-orange-400",
-  recommended: "border-yellow-500/40 bg-yellow-500/12 text-yellow-400",
-  implemented: "border-green-500/40 bg-green-500/12 text-green-400",
+const statusColors: Record<string, string> = {
+  compliant:     "bg-green-500/15 border-green-500/40 text-green-400",
+  partial:       "bg-yellow-500/15 border-yellow-500/40 text-yellow-400",
+  non_compliant: "bg-red-500/15 border-red-500/40 text-red-400",
 };
 
 function formatEur(n: number) {
@@ -45,33 +39,38 @@ function formatEur(n: number) {
   }).format(n);
 }
 
-interface ComplianceReportProps {
-  result: AssessmentResult;
+interface GdprReportProps {
+  result: GdprAssessmentResult;
 }
 
-export function ComplianceReport({ result }: ComplianceReportProps) {
-  const levelInfo = RISK_LEVELS[result.riskLevel];
+export function GdprReport({ result }: GdprReportProps) {
+  const statusInfo = GDPR_STATUS[result.complianceStatus];
 
   return (
     <div className="space-y-5 mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
-      {/* Header — risk + cost */}
+      {/* Header — status + fine risk */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-6 rounded-2xl border bg-card">
         <div className="flex-1">
           <p className={cn("text-xs font-semibold uppercase tracking-widest mb-2", gold)}>
-            Risk Classification
+            GDPR Compliance Status
           </p>
-          <RiskBadge level={result.riskLevel} size="lg" />
-          <p className="mt-2 text-sm text-foreground/70">{levelInfo.description}</p>
+          <div className={cn(
+            "inline-flex items-center rounded-full border px-4 py-1.5 text-sm font-bold",
+            statusColors[result.complianceStatus]
+          )}>
+            {statusInfo.label}
+          </div>
+          <p className="mt-2 text-sm text-foreground/70">{statusInfo.description}</p>
         </div>
         <div className="hidden sm:block text-right">
           <p className={cn("text-xs font-semibold uppercase tracking-widest mb-1", gold)}>
-            Estimated Compliance Cost
+            Estimated Fine Risk
           </p>
           <p className="text-2xl font-bold text-foreground">
-            {result.estimatedCostRange.low === 0
-              ? "N/A"
-              : `${formatEur(result.estimatedCostRange.low)} – ${formatEur(result.estimatedCostRange.high)}`}
+            {result.estimatedFineRisk.low === 0
+              ? "Low / None"
+              : `${formatEur(result.estimatedFineRisk.low)} – ${formatEur(result.estimatedFineRisk.high)}`}
           </p>
         </div>
       </div>
@@ -80,13 +79,49 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className={cn("flex items-center gap-2 text-sm font-semibold uppercase tracking-widest", gold)}>
-            <ShieldAlert className={cn("h-4 w-4", gold)} />
+            <ShieldCheck className={cn("h-4 w-4", gold)} />
             Summary
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm leading-relaxed text-foreground">{result.summary}</p>
-          <p className="mt-2 text-sm text-foreground/60 italic">{result.riskReason}</p>
+          <p className="mt-2 text-sm text-foreground/60 italic">{result.statusReason}</p>
+        </CardContent>
+      </Card>
+
+      {/* Lawful basis + DPIA/DPO flags */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className={cn("flex items-center gap-2 text-sm font-semibold uppercase tracking-widest", gold)}>
+            <Scale className={cn("h-4 w-4", gold)} />
+            Legal Basis &amp; Obligations
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div>
+            <p className="text-xs text-foreground/50 uppercase tracking-wider mb-1">Lawful basis</p>
+            <p className="text-sm font-medium text-foreground">{result.legalBasis}</p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <div className={cn(
+              "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold",
+              result.dpiaRequired
+                ? "bg-orange-500/15 border-orange-500/40 text-orange-400"
+                : "bg-green-500/15 border-green-500/40 text-green-400"
+            )}>
+              <FileSearch className="h-3.5 w-3.5" />
+              DPIA {result.dpiaRequired ? "Required" : "Not Required"}
+            </div>
+            <div className={cn(
+              "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold",
+              result.dpoRequired
+                ? "bg-orange-500/15 border-orange-500/40 text-orange-400"
+                : "bg-green-500/15 border-green-500/40 text-green-400"
+            )}>
+              <UserCheck className="h-3.5 w-3.5" />
+              DPO {result.dpoRequired ? "Required" : "Not Required"}
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -102,37 +137,33 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
           <CardContent>
             <div className="flex flex-wrap gap-2">
               {result.applicableArticles.map((a) => {
-                let info = ARTICLE_INFO[a];
+                let info = GDPR_ARTICLE_INFO[a];
                 if (!info) {
-                  const match = a.match(/^(Art(?:icle)?\.?\s*\d+(?:\(\d+\))?(?:\([a-z]\))?)/i);
-                  if (match) info = ARTICLE_INFO[match[1].trim()] ?? ARTICLE_INFO[match[1].replace(/\s+/g, " ").trim()];
+                  const numMatch = a.match(/\d+/);
+                  if (numMatch) {
+                    info = { description: "", url: `https://gdpr-info.eu/art-${numMatch[0]}-gdpr/` };
+                  }
                 }
-                const numMatch = a.match(/\d+/);
-                const fallbackUrl = numMatch
-                  ? `https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=OJ:L_202401689#art_${numMatch[0]}`
-                  : null;
-                const url = info?.url ?? fallbackUrl;
+                const url = info?.url ?? null;
                 const Tag = url ? "a" : "span";
                 const linkProps = url
                   ? { href: url, target: "_blank", rel: "noopener noreferrer" }
                   : {};
+                const parts = a.split(/\s+[—–-]\s+/);
                 return (
                   <Tag
                     key={a}
-                    {...linkProps}
+                    {...(linkProps as object)}
                     className="group inline-flex items-center gap-1.5 rounded-full border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/8 px-3 py-1.5 text-sm hover:bg-[color:var(--gold)]/15 hover:border-[color:var(--gold)]/60 transition-all"
                   >
-                    {(() => {
-                      const parts = a.split(/\s+[—–-]\s+/);
-                      return parts.length > 1 ? (
-                        <>
-                          <span className="font-semibold text-[color:var(--gold)]">{parts[0]}</span>
-                          <span className="text-foreground/80"> — {parts.slice(1).join(" — ")}</span>
-                        </>
-                      ) : (
-                        <span className="font-semibold text-[color:var(--gold)]">{a}</span>
-                      );
-                    })()}
+                    {parts.length > 1 ? (
+                      <>
+                        <span className="font-semibold text-[color:var(--gold)]">{parts[0]}</span>
+                        <span className="text-foreground/80"> — {parts.slice(1).join(" — ")}</span>
+                      </>
+                    ) : (
+                      <span className="font-semibold text-[color:var(--gold)]">{a}</span>
+                    )}
                     {url && (
                       <ExternalLink className="h-3 w-3 text-[color:var(--gold)]/50 group-hover:text-[color:var(--gold)] shrink-0 transition-opacity" />
                     )}
@@ -144,34 +175,23 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
         </Card>
       )}
 
-      {/* Compliance Gaps */}
-      {result.complianceGaps.length > 0 && (
+      {/* Violations */}
+      {result.violations.length > 0 && (
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className={cn("flex items-center gap-2 text-sm font-semibold uppercase tracking-widest", gold)}>
               <AlertTriangle className={cn("h-4 w-4", gold)} />
-              Compliance Gaps
+              Violations &amp; Gaps
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {result.complianceGaps.map((gap, i) => (
+              {result.violations.map((v, i) => (
                 <span
                   key={i}
-                  className={cn(
-                    "inline-flex items-center rounded-full border px-3 py-1.5 text-sm",
-                    gapSeverityStyle[gap.severity]
-                  )}
+                  className="inline-flex items-center rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-sm text-red-400"
                 >
-                  {gap.text}
-                </span>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-border/50">
-              {(["critical", "high", "medium", "low"] as GapSeverity[]).map((s) => (
-                <span key={s} className="flex items-center gap-1.5 text-xs text-foreground/50">
-                  <span className={cn("inline-block h-2 w-2 rounded-full border", gapSeverityStyle[s])} />
-                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                  {v}
                 </span>
               ))}
             </div>
@@ -179,34 +199,23 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
         </Card>
       )}
 
-      {/* Required Safeguards */}
-      {result.requiredSafeguards.length > 0 && (
+      {/* Required Measures */}
+      {result.requiredMeasures.length > 0 && (
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className={cn("flex items-center gap-2 text-sm font-semibold uppercase tracking-widest", gold)}>
               <Lock className={cn("h-4 w-4", gold)} />
-              Required Safeguards
+              Required Measures
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {result.requiredSafeguards.map((s, i) => (
+              {result.requiredMeasures.map((m, i) => (
                 <span
                   key={i}
-                  className={cn(
-                    "inline-flex items-center rounded-full border px-3 py-1.5 text-sm",
-                    safeguardStatusStyle[s.status]
-                  )}
+                  className="inline-flex items-center rounded-full border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/8 px-3 py-1.5 text-sm text-foreground/90"
                 >
-                  {s.text}
-                </span>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-3 mt-3 pt-3 border-t border-border/50">
-              {(["critical", "required", "recommended", "implemented"] as SafeguardStatus[]).map((s) => (
-                <span key={s} className="flex items-center gap-1.5 text-xs text-foreground/50">
-                  <span className={cn("inline-block h-2 w-2 rounded-full border", safeguardStatusStyle[s])} />
-                  {s.charAt(0).toUpperCase() + s.slice(1)}
+                  {m}
                 </span>
               ))}
             </div>
@@ -241,28 +250,28 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
         </Card>
       )}
 
-      {/* Cost Estimate (mobile only) */}
+      {/* Fine Risk (mobile) */}
       <Card className="sm:hidden">
         <CardHeader className="pb-2">
           <CardTitle className={cn("flex items-center gap-2 text-sm font-semibold uppercase tracking-widest", gold)}>
             <EuroIcon className={cn("h-4 w-4", gold)} />
-            Estimated Compliance Cost
+            Estimated Fine Risk
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-2xl font-bold text-foreground">
-            {result.estimatedCostRange.low === 0
-              ? "N/A — prohibited use"
-              : `${formatEur(result.estimatedCostRange.low)} – ${formatEur(result.estimatedCostRange.high)}`}
+            {result.estimatedFineRisk.low === 0
+              ? "Low / None"
+              : `${formatEur(result.estimatedFineRisk.low)} – ${formatEur(result.estimatedFineRisk.high)}`}
           </p>
           <p className="text-xs text-foreground/50 mt-1">
-            Indicative estimate based on typical audit, documentation, and legal costs.
+            Based on GDPR Art. 83 fine tiers and identified violations.
           </p>
         </CardContent>
       </Card>
 
       <p className="text-xs text-center text-foreground/40 pb-4">
-        This report is an indicative assessment based on AI analysis. Consult a legal advisor for definitive compliance decisions.
+        This report is an indicative GDPR assessment based on AI analysis. Consult a data protection legal advisor for definitive compliance decisions.
       </p>
     </div>
   );

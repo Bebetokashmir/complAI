@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Header } from "@/components/Header";
 import "./globals.css";
 
 const geist = Geist({
@@ -32,7 +33,10 @@ export default function RootLayout({
         className={`${geist.variable} ${geistMono.variable} font-sans antialiased min-h-screen flex flex-col`}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <TooltipProvider>{children}</TooltipProvider>
+          <TooltipProvider>
+            <Header />
+            {children}
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>
