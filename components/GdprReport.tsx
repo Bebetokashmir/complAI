@@ -3,6 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { GDPR_STATUS, GDPR_ARTICLE_INFO } from "@/lib/gdpr";
 import type { GdprAssessmentResult } from "@/types/gdpr";
+import { ImportToExpert } from "@/components/ImportToExpert";
 import {
   ShieldCheck,
   BookOpen,
@@ -275,6 +276,9 @@ export function GdprReport({ result }: GdprReportProps) {
           </p>
         </CardContent>
       </Card>
+
+      {/* Import to Expert */}
+      <ImportToExpert type="gdpr" result={result} />
 
       <p className="text-xs text-center text-foreground/40 pb-4">
         This report is an indicative GDPR assessment based on AI analysis. Consult a data protection legal advisor for definitive compliance decisions.

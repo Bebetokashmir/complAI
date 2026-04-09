@@ -5,14 +5,24 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { RiskBadge } from "@/components/RiskBadge";
 import { AI_ACT_CHECKLIST, GDPR_CHECKLIST } from "@/lib/expert-checklists";
+import {
+  loadProjects, saveProjects, loadState, saveState,
+  loadAssessment, assessmentKey,
+} from "@/lib/expert-storage";
 import type { ChecklistItem, ItemStatus, Project, ProjectState } from "@/types/expert";
+import type { AssessmentResult } from "@/types/assessment";
+import type { GdprAssessmentResult } from "@/types/gdpr";
+import { GDPR_STATUS } from "@/lib/gdpr";
 import {
   Plus, Trash2, ChevronDown, ChevronUp, ExternalLink,
   CheckCircle2, Clock, Circle, MinusCircle,
   Send, Bot, User, Loader2, MessageSquare, X,
+  AlertTriangle, ShieldCheck, RefreshCw, ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 /* ─── Types ─── */
 interface ChatMessage { role: "user" | "assistant"; content: string; }
@@ -25,18 +35,13 @@ const STATUS_CONFIG: Record<ItemStatus, { label: string; icon: React.ReactNode; 
   na:          { label: "N/A",         icon: <MinusCircle className="h-4 w-4" />,   next: "todo",        color: "text-foreground/20" },
 };
 
-/* ─── Storage helpers ─── */
-const PROJECTS_KEY = "complai_projects";
-const stateKey = (id: string) => `complai_state_${id}`;
+const gapSeverityStyle: Record<string, string> = {
+  critical: "border-red-500/40 text-red-400",
+  high:     "border-orange-500/40 text-orange-400",
+  medium:   "border-yellow-500/40 text-yellow-400",
+  low:      "border-green-500/40 text-green-400",
+};
 
-function loadProjects(): Project[] {
-  try { return JSON.parse(localStorage.getItem(PROJECTS_KEY) ?? "[]"); } catch { return []; }
-}
-function saveProjects(p: Project[]) { localStorage.setItem(PROJECTS_KEY, JSON.stringify(p)); }
-function loadState(id: string): ProjectState {
-  try { return JSON.parse(localStorage.getItem(stateKey(id)) ?? "{}"); } catch { return { aiAct: {}, gdpr: {} }; }
-}
-function saveState(id: string, s: ProjectState) { localStorage.setItem(stateKey(id), JSON.stringify(s)); }
 function defaultState(): ProjectState { return { aiAct: {}, gdpr: {} }; }
 function getItem(state: ProjectState, reg: "aiAct" | "gdpr", id: string) {
   return state[reg][id] ?? { status: "todo" as ItemStatus, notes: "" };
@@ -47,6 +52,168 @@ function calcProgress(items: ChecklistItem[], state: ProjectState, reg: "aiAct" 
   const mandatory = items.filter((i) => i.mandatory);
   const done = mandatory.filter((i) => getItem(state, reg, i.id).status === "done").length;
   return { done, total: mandatory.length, pct: mandatory.length ? Math.round((done / mandatory.length) * 100) : 0 };
+}
+
+/* ─── Assessment summary panel ─── */
+function AssessmentSummaryPanel({
+  projectId, type,
+}: {
+  projectId: string; type: "aiAct" | "gdpr";
+}) {
+  const [data, setData] = useState<(AssessmentResult | GdprAssessmentResult) & { _importedAt?: string } | null>(null);
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    function load() {
+      const d = loadAssessment(projectId, type) as (AssessmentResult & { _importedAt?: string }) | null;
+      setData(d);
+    }
+    load();
+    // Re-load when localStorage changes (e.g. import from another tab)
+    const handler = (e: StorageEvent) => {
+      if (e.key === assessmentKey(projectId, type)) load();
+    };
+    window.addEventListener("storage", handler);
+    return () => window.removeEventListener("storage", handler);
+  }, [projectId, type]);
+
+  if (!data) {
+    return (
+      <div className="rounded-xl border border-dashed border-border/60 px-5 py-4 flex items-center justify-between text-sm text-foreground/40">
+        <span>No {type === "aiAct" ? "AI Act" : "GDPR"} assessment imported yet.</span>
+        <Link
+          href={type === "aiAct" ? "/" : "/gdpr"}
+          className="flex items-center gap-1 text-[color:var(--gold)] hover:opacity-70 text-xs font-medium"
+        >
+          Run assessment <ChevronRight className="h-3.5 w-3.5" />
+        </Link>
+      </div>
+    );
+  }
+
+  const importedAt = data._importedAt ? new Date(data._importedAt).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
+
+  return (
+    <div className="rounded-xl border border-[color:var(--gold)]/25 bg-[color:var(--gold)]/4 overflow-hidden">
+      {/* Header */}
+      <button
+        onClick={() => setCollapsed((c) => !c)}
+        className="w-full flex items-center justify-between px-5 py-3 text-left"
+      >
+        <div className="flex items-center gap-3">
+          <ShieldCheck className="h-4 w-4 text-[color:var(--gold)]" />
+          <span className="text-sm font-semibold">
+            {type === "aiAct" ? "AI Act" : "GDPR"} Assessment Results
+          </span>
+          <span className="text-xs text-foreground/35">{importedAt}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href={type === "aiAct" ? "/" : "/gdpr"}
+            onClick={(e) => e.stopPropagation()}
+            className="text-xs text-foreground/40 hover:text-[color:var(--gold)] flex items-center gap-1"
+          >
+            <RefreshCw className="h-3 w-3" /> Re-assess
+          </Link>
+          {collapsed ? <ChevronDown className="h-4 w-4 text-foreground/30" /> : <ChevronUp className="h-4 w-4 text-foreground/30" />}
+        </div>
+      </button>
+
+      {!collapsed && (
+        <div className="px-5 pb-4 space-y-3 border-t border-[color:var(--gold)]/15">
+          {/* AI Act specific */}
+          {type === "aiAct" && (() => {
+            const r = data as AssessmentResult;
+            return (
+              <>
+                <div className="flex items-center gap-3 pt-3">
+                  <RiskBadge level={r.riskLevel} size="sm" />
+                  <p className="text-xs text-foreground/55 leading-relaxed">{r.summary}</p>
+                </div>
+                {r.complianceGaps.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-foreground/35 mb-2">Compliance Gaps</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {r.complianceGaps.map((g, i) => (
+                        <span key={i} className={cn(
+                          "inline-flex rounded-full border px-2.5 py-1 text-xs",
+                          gapSeverityStyle[g.severity] ?? "border-border text-foreground/60"
+                        )}>
+                          {g.text}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {r.requiredSafeguards.filter((s) => s.status === "critical" || s.status === "required").length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-foreground/35 mb-2">Required Safeguards</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {r.requiredSafeguards
+                        .filter((s) => s.status === "critical" || s.status === "required")
+                        .map((s, i) => (
+                          <span key={i} className={cn(
+                            "inline-flex rounded-full border px-2.5 py-1 text-xs",
+                            s.status === "critical" ? "border-red-500/40 text-red-400" : "border-orange-500/40 text-orange-400"
+                          )}>
+                            {s.text}
+                          </span>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            );
+          })()}
+
+          {/* GDPR specific */}
+          {type === "gdpr" && (() => {
+            const r = data as GdprAssessmentResult;
+            const statusInfo = GDPR_STATUS[r.complianceStatus];
+            const statusColor = { compliant: "text-green-400", partial: "text-yellow-400", non_compliant: "text-red-400" }[r.complianceStatus];
+            return (
+              <>
+                <div className="flex items-center gap-3 pt-3">
+                  <span className={cn("text-sm font-bold", statusColor)}>{statusInfo.label}</span>
+                  <p className="text-xs text-foreground/55 leading-relaxed">{r.summary}</p>
+                </div>
+                {r.violations.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-foreground/35 mb-2">Violations</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {r.violations.map((v, i) => (
+                        <span key={i} className="inline-flex rounded-full border border-red-500/40 text-red-400 px-2.5 py-1 text-xs">
+                          {v}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {r.requiredMeasures.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-foreground/35 mb-2">Required Measures</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {r.requiredMeasures.map((m, i) => (
+                        <span key={i} className="inline-flex rounded-full border border-orange-500/40 text-orange-400 px-2.5 py-1 text-xs">
+                          {m}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {r.dpiaRequired && (
+                  <div className="flex items-center gap-2 text-xs text-orange-400">
+                    <AlertTriangle className="h-3.5 w-3.5" />
+                    DPIA required · {r.dpoRequired ? "DPO required" : "DPO not required"}
+                  </div>
+                )}
+              </>
+            );
+          })()}
+        </div>
+      )}
+    </div>
+  );
 }
 
 /* ─── Checklist row ─── */
@@ -140,7 +307,6 @@ function ChatPanel({
   const bottomRef = useRef<HTMLDivElement>(null);
   const prevItemId = useRef<string | undefined>(undefined);
 
-  // Reset chat when a different item is selected
   useEffect(() => {
     if (selectedItem?.id !== prevItemId.current) {
       setMessages([]);
@@ -173,10 +339,8 @@ function ChatPanel({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: nextMessages, context }),
       });
-
       if (!res.ok || !res.body) throw new Error("Chat failed");
 
-      // Stream text response
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let content = "";
@@ -201,7 +365,6 @@ function ChatPanel({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b shrink-0">
         <div className="flex items-center gap-2">
           <Bot className="h-4 w-4 text-[color:var(--gold)]" />
@@ -212,7 +375,6 @@ function ChatPanel({
         </button>
       </div>
 
-      {/* Context pill */}
       {selectedItem && (
         <div className="px-4 py-2 border-b bg-[color:var(--gold)]/5 shrink-0">
           <p className="text-xs font-semibold text-[color:var(--gold)]">{selectedItem.article} — {selectedItem.title}</p>
@@ -220,7 +382,6 @@ function ChatPanel({
         </div>
       )}
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 min-h-0">
         {messages.length === 0 && (
           <div className="text-center text-foreground/35 text-sm py-10 leading-relaxed">
@@ -242,10 +403,7 @@ function ChatPanel({
                 ? "bg-primary text-primary-foreground rounded-tr-sm"
                 : "bg-muted text-foreground rounded-tl-sm"
             )}>
-              {m.content}
-              {m.role === "assistant" && m.content === "" && (
-                <Loader2 className="h-4 w-4 animate-spin text-foreground/40" />
-              )}
+              {m.content || (m.role === "assistant" && <Loader2 className="h-4 w-4 animate-spin text-foreground/40" />)}
             </div>
             {m.role === "user" && (
               <div className="h-6 w-6 rounded-full bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
@@ -254,20 +412,9 @@ function ChatPanel({
             )}
           </div>
         ))}
-        {loading && messages[messages.length - 1]?.role !== "assistant" && (
-          <div className="flex gap-2">
-            <div className="h-6 w-6 rounded-full bg-[color:var(--gold)]/15 flex items-center justify-center shrink-0">
-              <Bot className="h-3.5 w-3.5 text-[color:var(--gold)]" />
-            </div>
-            <div className="bg-muted rounded-2xl rounded-tl-sm px-3.5 py-2.5">
-              <Loader2 className="h-4 w-4 animate-spin text-foreground/40" />
-            </div>
-          </div>
-        )}
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
       <form onSubmit={send} className="px-4 py-3 border-t flex gap-2 shrink-0">
         <Input
           value={input}
@@ -287,15 +434,15 @@ function ChatPanel({
 
 /* ─── Main dashboard ─── */
 export function ExpertDashboard() {
-  const [projects, setProjects]           = useState<Project[]>([]);
-  const [activeProjectId, setActiveId]    = useState<string | null>(null);
-  const [state, setState]                 = useState<ProjectState>(defaultState());
-  const [tab, setTab]                     = useState<"aiAct" | "gdpr">("aiAct");
-  const [newName, setNewName]             = useState("");
-  const [creating, setCreating]           = useState(false);
-  const [selectedItem, setSelectedItem]   = useState<ChecklistItem | null>(null);
-  const [chatOpen, setChatOpen]           = useState(false);
-  const [hydrated, setHydrated]           = useState(false);
+  const [projects, setProjects]         = useState<Project[]>([]);
+  const [activeProjectId, setActiveId]  = useState<string | null>(null);
+  const [state, setState]               = useState<ProjectState>(defaultState());
+  const [tab, setTab]                   = useState<"aiAct" | "gdpr">("aiAct");
+  const [newName, setNewName]           = useState("");
+  const [creating, setCreating]         = useState(false);
+  const [selectedItem, setSelectedItem] = useState<ChecklistItem | null>(null);
+  const [chatOpen, setChatOpen]         = useState(false);
+  const [hydrated, setHydrated]         = useState(false);
 
   useEffect(() => {
     const ps = loadProjects();
@@ -303,6 +450,18 @@ export function ExpertDashboard() {
     if (ps.length > 0) { setActiveId(ps[0].id); setState(loadState(ps[0].id)); }
     setHydrated(true);
   }, []);
+
+  // Re-load state when a new assessment is imported (storage event from same tab)
+  useEffect(() => {
+    if (!activeProjectId) return;
+    function onStorage(e: StorageEvent) {
+      if (activeProjectId && (e.key === assessmentKey(activeProjectId, "aiAct") || e.key === assessmentKey(activeProjectId, "gdpr"))) {
+        setState(loadState(activeProjectId));
+      }
+    }
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, [activeProjectId]);
 
   function switchProject(id: string) {
     setActiveId(id); setState(loadState(id)); setSelectedItem(null);
@@ -318,7 +477,7 @@ export function ExpertDashboard() {
 
   function deleteProject(id: string) {
     const updated = projects.filter((p) => p.id !== id);
-    setProjects(updated); saveProjects(updated); localStorage.removeItem(stateKey(id));
+    setProjects(updated); saveProjects(updated); localStorage.removeItem(`complai_state_${id}`);
     if (activeProjectId === id) {
       if (updated.length > 0) switchProject(updated[0].id);
       else { setActiveId(null); setState(defaultState()); }
@@ -373,8 +532,7 @@ export function ExpertDashboard() {
         ))}
         {creating ? (
           <div className="flex items-center gap-2">
-            <Input
-              autoFocus placeholder="Project name…" className="h-8 w-44 text-sm"
+            <Input autoFocus placeholder="Project name…" className="h-8 w-44 text-sm"
               value={newName} onChange={(e) => setNewName(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") createProject(); if (e.key === "Escape") setCreating(false); }}
             />
@@ -398,17 +556,13 @@ export function ExpertDashboard() {
           {/* Progress cards */}
           <div className="grid grid-cols-2 gap-4">
             {([
-              { label: "AI Act", prog: aiProg,   reg: "aiAct" as const },
-              { label: "GDPR",   prog: gdprProg,  reg: "gdpr"  as const },
+              { label: "AI Act", prog: aiProg,  reg: "aiAct" as const },
+              { label: "GDPR",   prog: gdprProg, reg: "gdpr"  as const },
             ] as const).map(({ label, prog, reg }) => (
-              <button
-                key={reg}
-                onClick={() => setTab(reg)}
-                className={cn(
-                  "text-left p-5 rounded-2xl border transition-all",
-                  tab === reg ? "bg-card border-[color:var(--gold)]/40" : "bg-muted/40 border-border hover:border-foreground/20"
-                )}
-              >
+              <button key={reg} onClick={() => setTab(reg)} className={cn(
+                "text-left p-5 rounded-2xl border transition-all",
+                tab === reg ? "bg-card border-[color:var(--gold)]/40" : "bg-muted/40 border-border hover:border-foreground/20"
+              )}>
                 <p className="text-xs font-semibold uppercase tracking-widest text-foreground/35 mb-1">{label}</p>
                 <p className="text-2xl font-bold text-foreground mb-3">{prog.pct}%</p>
                 <div className="h-1.5 rounded-full bg-muted overflow-hidden">
@@ -425,30 +579,26 @@ export function ExpertDashboard() {
             ))}
           </div>
 
+          {/* Assessment summary */}
+          <AssessmentSummaryPanel projectId={activeProjectId} type={tab} />
+
           {/* Checklist + Chat */}
           <div className={cn("grid gap-6 items-start", chatOpen ? "grid-cols-1 lg:grid-cols-[1fr_380px]" : "grid-cols-1")}>
-
-            {/* Checklist */}
             <Card className="overflow-hidden">
               <CardHeader className="pb-0 px-4 pt-4">
                 <div className="flex gap-1 border-b pb-3">
                   {(["aiAct", "gdpr"] as const).map((r) => (
-                    <button
-                      key={r}
-                      onClick={() => setTab(r)}
+                    <button key={r} onClick={() => setTab(r)}
                       className={cn(
                         "px-4 py-1.5 rounded-md text-sm font-medium transition-colors",
                         tab === r ? "bg-[color:var(--gold)]/15 text-[color:var(--gold)]" : "text-muted-foreground hover:text-foreground"
-                      )}
-                    >
+                      )}>
                       {r === "aiAct" ? "AI Act" : "GDPR"}
                     </button>
                   ))}
                   {!chatOpen && (
-                    <button
-                      onClick={() => setChatOpen(true)}
-                      className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs text-muted-foreground hover:text-[color:var(--gold)] transition-colors border border-border hover:border-[color:var(--gold)]/40"
-                    >
+                    <button onClick={() => setChatOpen(true)}
+                      className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs text-muted-foreground hover:text-[color:var(--gold)] transition-colors border border-border hover:border-[color:var(--gold)]/40">
                       <Bot className="h-3.5 w-3.5" /> Ask AI
                     </button>
                   )}
@@ -463,8 +613,7 @@ export function ExpertDashboard() {
                     <ul>
                       {items.map((item) => (
                         <ChecklistRow
-                          key={item.id}
-                          item={item} state={state} reg={tab}
+                          key={item.id} item={item} state={state} reg={tab}
                           onStatusChange={(id, s) => updateStatus(tab, id, s)}
                           onNotesChange={(id, n) => updateNotes(tab, id, n)}
                           onSelect={(item) => { setSelectedItem(item); setChatOpen(true); }}
@@ -477,7 +626,6 @@ export function ExpertDashboard() {
               </CardContent>
             </Card>
 
-            {/* Chat panel */}
             {chatOpen && (
               <div className="sticky top-20">
                 <Card className="overflow-hidden flex flex-col" style={{ height: "680px" }}>

@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RiskBadge } from "@/components/RiskBadge";
 import { RISK_LEVELS, ARTICLE_INFO } from "@/lib/ai-act";
 import type { AssessmentResult, GapSeverity, SafeguardStatus } from "@/types/assessment";
+import { ImportToExpert } from "@/components/ImportToExpert";
 import {
   ShieldAlert,
   BookOpen,
@@ -250,6 +251,9 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
           </p>
         </CardContent>
       </Card>
+
+      {/* Import to Expert */}
+      <ImportToExpert type="aiAct" result={result} />
 
       <p className="text-xs text-center text-foreground/40 pb-4">
         This report is an indicative assessment based on AI analysis. Consult a legal advisor for definitive compliance decisions.
