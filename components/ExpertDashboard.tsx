@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import ReactMarkdown from "react-markdown";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -398,12 +399,35 @@ function ChatPanel({
               </div>
             )}
             <div className={cn(
-              "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap",
+              "max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
               m.role === "user"
-                ? "bg-primary text-primary-foreground rounded-tr-sm"
+                ? "bg-primary text-primary-foreground rounded-tr-sm whitespace-pre-wrap"
                 : "bg-muted text-foreground rounded-tl-sm"
             )}>
-              {m.content || (m.role === "assistant" && <Loader2 className="h-4 w-4 animate-spin text-foreground/40" />)}
+              {m.role === "assistant" ? (
+                m.content
+                  ? (
+                    <ReactMarkdown
+                      components={{
+                        p:      ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+                        ul:     ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-0.5">{children}</ul>,
+                        ol:     ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-0.5">{children}</ol>,
+                        li:     ({ children }) => <li className="leading-snug">{children}</li>,
+                        strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
+                        h1:     ({ children }) => <p className="font-bold mb-1">{children}</p>,
+                        h2:     ({ children }) => <p className="font-bold mb-1">{children}</p>,
+                        h3:     ({ children }) => <p className="font-semibold mb-1">{children}</p>,
+                        code:   ({ children }) => <code className="bg-background/40 rounded px-1 py-0.5 text-xs font-mono">{children}</code>,
+                        hr:     () => <hr className="border-border/50 my-2" />,
+                      }}
+                    >
+                      {m.content}
+                    </ReactMarkdown>
+                  )
+                  : <Loader2 className="h-4 w-4 animate-spin text-foreground/40" />
+              ) : (
+                m.content
+              )}
             </div>
             {m.role === "user" && (
               <div className="h-6 w-6 rounded-full bg-primary/15 flex items-center justify-center shrink-0 mt-0.5">
