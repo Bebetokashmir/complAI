@@ -109,11 +109,21 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
                   <Tag
                     key={a}
                     {...linkProps}
-                    className="group inline-flex items-center gap-1.5 rounded-full border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/8 px-3 py-1.5 text-sm font-medium text-[color:var(--gold)] hover:bg-[color:var(--gold)]/15 hover:border-[color:var(--gold)]/60 transition-all"
+                    className="group inline-flex items-center gap-1.5 rounded-full border border-[color:var(--gold)]/30 bg-[color:var(--gold)]/8 px-3 py-1.5 text-sm hover:bg-[color:var(--gold)]/15 hover:border-[color:var(--gold)]/60 transition-all"
                   >
-                    {a}
+                    {(() => {
+                      const parts = a.split(/\s+[—–-]\s+/);
+                      return parts.length > 1 ? (
+                        <>
+                          <span className="font-semibold text-[color:var(--gold)]">{parts[0]}</span>
+                          <span className="text-foreground/80"> — {parts.slice(1).join(" — ")}</span>
+                        </>
+                      ) : (
+                        <span className="font-semibold text-[color:var(--gold)]">{a}</span>
+                      );
+                    })()}
                     {url && (
-                      <ExternalLink className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" />
+                      <ExternalLink className="h-3 w-3 text-[color:var(--gold)]/50 group-hover:text-[color:var(--gold)] shrink-0 transition-opacity" />
                     )}
                   </Tag>
                 );
