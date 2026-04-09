@@ -12,7 +12,7 @@ export default function Home() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
               <Shield className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="font-heading text-xl font-bold tracking-tight">
+            <span className="text-xl font-bold tracking-tight">
               Compl<span className="text-[color:var(--gold)]">AI</span>
             </span>
           </div>
@@ -32,13 +32,13 @@ export default function Home() {
             <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
             Based on EU AI Act (Regulation 2024/1689)
           </div>
-          <h1 className="font-heading text-4xl sm:text-5xl font-bold leading-tight mb-4">
+          <h1 className="text-4xl sm:text-5xl font-bold tracking-tight leading-tight mb-4">
             Is your AI project{" "}
             <span className="gradient-gold">compliant</span>?
           </h1>
-          <p className="text-lg text-muted-foreground max-w-xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
             Assess your AI project against the EU AI Act in seconds. Discover your risk level,
-            compliance gaps, and the safeguards you need to put in place — built for startups.
+            compliance gaps, and the safeguards you need — built for startups.
           </p>
         </div>
       </section>

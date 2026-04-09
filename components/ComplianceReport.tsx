@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RiskBadge } from "@/components/RiskBadge";
-import { RISK_LEVELS, ARTICLE_DESCRIPTIONS } from "@/lib/ai-act";
+import { RISK_LEVELS, ARTICLE_INFO } from "@/lib/ai-act";
 import type { AssessmentResult } from "@/types/assessment";
 import {
   ShieldAlert,
@@ -13,6 +13,7 @@ import {
   ListChecks,
   EuroIcon,
   ChevronRight,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -78,26 +79,34 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {result.applicableArticles.map((a) => {
-                const description = ARTICLE_DESCRIPTIONS[a];
+                const info = ARTICLE_INFO[a];
+                const Tag = info ? "a" : "div";
+                const linkProps = info
+                  ? { href: info.url, target: "_blank", rel: "noopener noreferrer" }
+                  : {};
                 return (
-                  <div
+                  <Tag
                     key={a}
-                    className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 px-3 py-2.5 hover:bg-muted/70 transition-colors"
+                    {...linkProps}
+                    className="group flex items-start gap-3 rounded-lg border border-border bg-muted/40 px-3 py-2.5 transition-colors hover:bg-primary/5 hover:border-primary/30 cursor-pointer"
                   >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 border border-primary/20">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 border border-primary/20 group-hover:bg-primary/20 transition-colors">
                       <BookOpen className="h-3.5 w-3.5 text-primary" />
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-semibold font-mono text-primary leading-tight">
                         {a}
                       </p>
-                      {description && (
+                      {info?.description && (
                         <p className="text-xs text-muted-foreground mt-0.5 leading-tight">
-                          {description}
+                          {info.description}
                         </p>
                       )}
                     </div>
-                  </div>
+                    {info && (
+                      <ExternalLink className="h-3 w-3 text-muted-foreground/50 group-hover:text-primary shrink-0 mt-1 transition-colors" />
+                    )}
+                  </Tag>
                 );
               })}
             </div>
