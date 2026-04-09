@@ -2,52 +2,48 @@ import type { RiskLevel } from "@/types/assessment";
 
 export const RISK_LEVELS: Record<
   RiskLevel,
-  { label: string; labelNL: string; description: string; color: string }
+  { label: string; description: string; color: string }
 > = {
   unacceptable: {
     label: "Unacceptable Risk",
-    labelNL: "Onaanvaardbaar Risico",
     description:
-      "Verboden toepassingen. Het systeem mag niet op de markt worden gebracht.",
+      "Prohibited applications. This system may not be placed on the market.",
     color: "destructive",
   },
   high: {
     label: "High Risk",
-    labelNL: "Hoog Risico",
     description:
-      "Strenge verplichtingen vóór marktintroductie (Art. 9–15 AI Act).",
+      "Strict obligations before market introduction (Art. 9–15 AI Act).",
     color: "warning",
   },
   limited: {
     label: "Limited Risk",
-    labelNL: "Beperkt Risico",
-    description: "Transparantieverplichtingen van toepassing.",
+    description: "Transparency obligations apply.",
     color: "caution",
   },
   minimal: {
     label: "Minimal Risk",
-    labelNL: "Minimaal Risico",
-    description: "Minimale verplichtingen. Vrijwillige gedragscodes aanbevolen.",
+    description: "Minimal obligations. Voluntary codes of conduct recommended.",
     color: "safe",
   },
 };
 
 export const HIGH_RISK_DOMAINS = [
-  "Biometrische identificatie en categorisering",
-  "Kritieke infrastructuur (energie, water, transport)",
-  "Onderwijs en beroepsopleidingen",
-  "Werkgelegenheid en personeelsbeheer",
-  "Toegang tot essentiële diensten (krediet, sociale zekerheid)",
-  "Rechtshandhaving",
-  "Migratie en asiel",
-  "Rechtsbedeling en democratisch proces",
+  "Biometric identification and categorisation",
+  "Critical infrastructure (energy, water, transport)",
+  "Education and vocational training",
+  "Employment and workforce management",
+  "Access to essential services (credit, social security)",
+  "Law enforcement",
+  "Migration, asylum and border control",
+  "Administration of justice and democratic processes",
 ];
 
 export const FORBIDDEN_USES = [
-  "Social scoring door overheidsinstanties",
-  "Manipulatie via subliminale technieken",
-  "Exploitatie van kwetsbare groepen",
-  "Real-time biometrische identificatie in openbare ruimten (met uitzonderingen)",
-  "Emotion recognition op de werkplek of in onderwijs",
-  "Biometrische categorisering op basis van beschermde kenmerken",
+  "Social scoring by public authorities",
+  "Manipulation via subliminal techniques",
+  "Exploitation of vulnerable groups",
+  "Real-time remote biometric identification in public spaces (with exceptions)",
+  "Emotion recognition in the workplace or educational institutions",
+  "Biometric categorisation based on protected characteristics",
 ];

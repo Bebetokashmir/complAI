@@ -30,15 +30,15 @@ export default function Home() {
         <div className="max-w-2xl mx-auto">
           <div className="inline-flex items-center gap-2 rounded-full border bg-muted/60 px-3 py-1 text-xs text-muted-foreground mb-6">
             <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-            Gebaseerd op EU AI Act (Verordening 2024/1689)
+            Based on EU AI Act (Regulation 2024/1689)
           </div>
           <h1 className="font-heading text-4xl sm:text-5xl font-bold leading-tight mb-4">
-            Is uw AI-project{" "}
+            Is your AI project{" "}
             <span className="gradient-gold">compliant</span>?
           </h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-            Toets uw AI-project in seconden aan de EU AI Act. Ontdek uw risiconiveau,
-            compliance-gaps en de waarborgen die u moet nemen — speciaal voor startups.
+            Assess your AI project against the EU AI Act in seconds. Discover your risk level,
+            compliance gaps, and the safeguards you need to put in place — built for startups.
           </p>
         </div>
       </section>
@@ -51,8 +51,8 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t py-6 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
-          <p>© 2025 ComplAI — Geen juridisch advies. Raadpleeg een adviseur voor definitieve beslissingen.</p>
-          <p>Aangedreven door Claude AI · EU AI Act 2024/1689</p>
+          <p>© 2025 ComplAI — Not legal advice. Consult a qualified advisor for definitive compliance decisions.</p>
+          <p>Powered by Claude AI · EU AI Act 2024/1689</p>
         </div>
       </footer>
     </div>

@@ -32,11 +32,11 @@ export function AssessmentForm() {
         body: JSON.stringify({ url: urlInput }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Scrape mislukt.");
+      if (!res.ok) throw new Error(data.error || "Scrape failed.");
       setTextContent(data.text);
       setScrapedUrl(true);
     } catch (err) {
-      setScrapeError(err instanceof Error ? err.message : "Fout bij ophalen website.");
+      setScrapeError(err instanceof Error ? err.message : "Failed to fetch website.");
     } finally {
       setScraping(false);
     }
@@ -54,7 +54,7 @@ export function AssessmentForm() {
         : fileContent;
 
     if (!content || content.trim().length < 20) {
-      setError("Geef een voldoende beschrijving op (minimaal 20 tekens).");
+      setError("Please provide a description of at least 20 characters.");
       return;
     }
 
@@ -66,10 +66,10 @@ export function AssessmentForm() {
         body: JSON.stringify({ content }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Beoordeling mislukt.");
+      if (!res.ok) throw new Error(data.error || "Assessment failed.");
       setResult(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Er is een fout opgetreden.");
+      setError(err instanceof Error ? err.message : "An error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -90,7 +90,7 @@ export function AssessmentForm() {
         <TabsList className="grid w-full grid-cols-3 mb-6">
           <TabsTrigger value="text" className="gap-2">
             <AlignLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">Beschrijf</span>
+            <span className="hidden sm:inline">Describe</span>
           </TabsTrigger>
           <TabsTrigger value="url" className="gap-2">
             <Globe className="h-4 w-4" />
@@ -104,20 +104,20 @@ export function AssessmentForm() {
 
         <TabsContent value="text">
           <Textarea
-            placeholder="Beschrijf uw AI-project: wat doet het systeem, wie zijn de gebruikers, welke data wordt verwerkt, in welke sector opereert het…"
+            placeholder="Describe your AI project: what does the system do, who are the users, what data is processed, in which sector does it operate…"
             className="min-h-[200px] resize-none text-sm leading-relaxed"
             value={textContent}
             onChange={(e) => setTextContent(e.target.value)}
           />
           <p className="text-xs text-muted-foreground mt-2">
-            {textContent.length} / 12.000 tekens
+            {textContent.length} / 12,000 characters
           </p>
         </TabsContent>
 
         <TabsContent value="url">
           <div className="flex gap-2 mb-3">
             <Input
-              placeholder="https://uwbedrijf.nl/product"
+              placeholder="https://yourcompany.com/product"
               value={urlInput}
               onChange={(e) => { setUrlInput(e.target.value); setScrapedUrl(false); setScrapeError(""); }}
               className="flex-1"
@@ -128,7 +128,7 @@ export function AssessmentForm() {
               onClick={scrapeWebsite}
               disabled={scraping || !urlInput}
             >
-              {scraping ? <Loader2 className="h-4 w-4 animate-spin" /> : "Ophalen"}
+              {scraping ? <Loader2 className="h-4 w-4 animate-spin" /> : "Fetch"}
             </Button>
           </div>
           {scrapeError && (
@@ -136,7 +136,7 @@ export function AssessmentForm() {
           )}
           {scrapedUrl && textContent && (
             <div className="rounded-lg bg-muted p-3 text-xs text-muted-foreground max-h-32 overflow-y-auto">
-              <p className="font-medium mb-1 text-foreground">Opgehaalde tekst:</p>
+              <p className="font-medium mb-1 text-foreground">Fetched text preview:</p>
               {textContent.slice(0, 400)}…
             </div>
           )}
@@ -149,7 +149,7 @@ export function AssessmentForm() {
           />
           {fileContent && (
             <p className="text-xs text-muted-foreground mt-2">
-              {fileContent.length} tekens geladen uit document.
+              {fileContent.length} characters loaded from document.
             </p>
           )}
         </TabsContent>
@@ -167,12 +167,12 @@ export function AssessmentForm() {
         {loading ? (
           <>
             <Loader2 className="h-5 w-5 animate-spin" />
-            AI Act beoordeling loopt…
+            Assessing against AI Act…
           </>
         ) : (
           <>
             <Sparkles className="h-5 w-5" />
-            Toets aan AI Act
+            Assess AI Act Compliance
           </>
         )}
       </Button>

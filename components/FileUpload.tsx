@@ -20,7 +20,7 @@ export function FileUpload({ onTextExtracted, onError }: FileUploadProps) {
 
   async function processFile(file: File) {
     if (file.size > MAX_MB * 1024 * 1024) {
-      onError(`Bestand te groot (max ${MAX_MB} MB).`);
+      onError(`File too large (max ${MAX_MB} MB).`);
       return;
     }
     setLoading(true);
@@ -30,16 +30,18 @@ export function FileUpload({ onTextExtracted, onError }: FileUploadProps) {
         const text = await file.text();
         onTextExtracted(text.slice(0, 12000));
       } else {
-        // Send to server for PDF/DOCX parsing
         const form = new FormData();
         form.append("file", file);
         const res = await fetch("/api/parse", { method: "POST", body: form });
-        if (!res.ok) throw new Error("Bestand kon niet worden verwerkt.");
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || "File could not be processed.");
+        }
         const { text } = await res.json();
         onTextExtracted(text);
       }
     } catch (err) {
-      onError(err instanceof Error ? err.message : "Fout bij verwerken bestand.");
+      onError(err instanceof Error ? err.message : "Error processing file.");
       setFileName(null);
     } finally {
       setLoading(false);
@@ -77,7 +79,7 @@ export function FileUpload({ onTextExtracted, onError }: FileUploadProps) {
       {loading ? (
         <div className="flex flex-col items-center gap-2 text-muted-foreground">
           <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-          <p className="text-sm">Bestand verwerken…</p>
+          <p className="text-sm">Processing file…</p>
         </div>
       ) : fileName ? (
         <div className="flex items-center justify-center gap-3 text-sm">
@@ -93,8 +95,8 @@ export function FileUpload({ onTextExtracted, onError }: FileUploadProps) {
       ) : (
         <div className="flex flex-col items-center gap-2 text-muted-foreground">
           <Upload className="h-8 w-8" />
-          <p className="font-medium text-sm">Sleep een bestand hierheen of klik om te selecteren</p>
-          <p className="text-xs">PDF, DOCX of TXT — max {MAX_MB} MB</p>
+          <p className="font-medium text-sm">Drop a file here or click to select</p>
+          <p className="text-xs">PDF, DOCX or TXT — max {MAX_MB} MB</p>
         </div>
       )}
     </div>

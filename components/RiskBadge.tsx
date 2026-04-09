@@ -29,7 +29,7 @@ export function RiskBadge({ level, size = "sm" }: RiskBadgeProps) {
         size === "lg" && "text-base px-4 py-1.5"
       )}
     >
-      {info.labelNL.toUpperCase()}
+      {info.label.toUpperCase()}
     </Badge>
   );
 }

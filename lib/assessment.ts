@@ -22,39 +22,39 @@ export const AssessmentSchema = z.object({
 });
 
 export function buildAssessmentPrompt(content: string): string {
-  return `Je bent een expert in de EU AI Act (Verordening (EU) 2024/1689). Analyseer het volgende AI-project en beoordeel de compliance.
+  return `You are an expert in the EU AI Act (Regulation (EU) 2024/1689). Analyse the following AI project and assess its compliance.
 
-## Te beoordelen AI-project
+## AI project to assess
 ${content}
 
-## EU AI Act Risicoclassificatie
+## EU AI Act Risk Classification
 
-### Onaanvaardbaar risico (Art. 5) — VERBODEN
+### Unacceptable risk (Art. 5) — PROHIBITED
 ${FORBIDDEN_USES.map((u) => `- ${u}`).join("\n")}
 
-### Hoog risico (Art. 6 + Bijlage III) — STRENGE VERPLICHTINGEN
-Sectoren: ${HIGH_RISK_DOMAINS.join(", ")}
-Verplichtingen: risicomanagement (Art. 9), datakwaliteit (Art. 10), technische documentatie (Art. 11), logging (Art. 12), transparantie (Art. 13), menselijk toezicht (Art. 14), nauwkeurigheid & robuustheid (Art. 15), conformiteitsbeoordeling (Art. 43).
+### High risk (Art. 6 + Annex III) — STRICT OBLIGATIONS
+Sectors: ${HIGH_RISK_DOMAINS.join(", ")}
+Obligations: risk management (Art. 9), data quality (Art. 10), technical documentation (Art. 11), logging (Art. 12), transparency (Art. 13), human oversight (Art. 14), accuracy & robustness (Art. 15), conformity assessment (Art. 43).
 
-### Beperkt risico — TRANSPARANTIEVERPLICHTINGEN
-Chatbots moeten melden dat ze AI zijn. Deepfakes moeten worden gelabeld.
+### Limited risk — TRANSPARENCY OBLIGATIONS
+Chatbots must disclose they are AI. Deepfakes must be labelled.
 
-### Minimaal risico — MINIMALE REGELS
-Vrijwillige gedragscodes aanbevolen.
+### Minimal risk — MINIMAL RULES
+Voluntary codes of conduct recommended.
 
-## Opdracht
-Geef een gestructureerde compliance-beoordeling met:
-1. Risicoclassificatie (unacceptable/high/limited/minimal)
-2. Motivatie met verwijzing naar specifieke artikelen
-3. Compliance-gaps (wat ontbreekt er aan het project?)
-4. Vereiste waarborgen voor het vastgestelde risiconiveau
-5. Aanbevolen acties (immediate = binnen 1 maand, short = 1–6 maanden, long = 6–18 maanden)
-6. Geschatte compliance-kosten in EUR (low/high range):
-   - Minimaal: €2.000–€10.000 (documentatie)
-   - Beperkt: €5.000–€25.000
-   - Hoog: €50.000–€500.000 (audit, documentatie, systemen, juridisch)
-   - Onaanvaardbaar: N.v.t. (verboden)
-7. Samenvatting in 2–3 zinnen
+## Task
+Provide a structured compliance assessment with:
+1. Risk classification (unacceptable/high/limited/minimal)
+2. Justification referencing specific articles
+3. Compliance gaps (what is missing from the project?)
+4. Required safeguards for the identified risk level
+5. Recommended actions (immediate = within 1 month, short = 1–6 months, long = 6–18 months)
+6. Estimated compliance costs in EUR (low/high range):
+   - Minimal: €2,000–€10,000 (documentation)
+   - Limited: €5,000–€25,000
+   - High: €50,000–€500,000 (audit, documentation, systems, legal)
+   - Unacceptable: N/A (prohibited)
+7. Summary in 2–3 sentences
 
-Antwoord uitsluitend in het gevraagde JSON-formaat. Wees specifiek en praktisch toepasbaar voor een startup.`;
+Respond exclusively in the requested JSON format. Be specific and practically applicable for a startup.`;
 }

@@ -17,8 +17,8 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: "ComplAI — EU AI Act Compliance Tool",
   description:
-    "Toets uw AI-project aan de EU AI Act. Krijg direct inzicht in uw risiconiveau, compliance-gaps en aanbevolen maatregelen.",
-  keywords: ["EU AI Act", "AI compliance", "AI risico", "GPAI", "hoog risico AI"],
+    "Assess your AI project against the EU AI Act. Instantly discover your risk level, compliance gaps, and recommended actions.",
+  keywords: ["EU AI Act", "AI compliance", "AI risk", "GPAI", "high risk AI", "startup compliance"],
 };
 
 export default function RootLayout({
@@ -27,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="nl" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${inter.variable} ${playfair.variable} font-sans antialiased min-h-screen flex flex-col`}
       >

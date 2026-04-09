@@ -17,13 +17,13 @@ import {
 import { cn } from "@/lib/utils";
 
 const priorityLabel = {
-  immediate: { label: "Onmiddellijk", color: "bg-red-500/15 text-red-600 dark:text-red-400" },
-  short: { label: "Korte termijn (1–6 mnd)", color: "bg-orange-500/15 text-orange-600 dark:text-orange-400" },
-  long: { label: "Lange termijn (6–18 mnd)", color: "bg-blue-500/15 text-blue-600 dark:text-blue-400" },
+  immediate: { label: "Immediate", color: "bg-red-500/15 text-red-600 dark:text-red-400" },
+  short: { label: "Short-term (1–6 mo)", color: "bg-orange-500/15 text-orange-600 dark:text-orange-400" },
+  long: { label: "Long-term (6–18 mo)", color: "bg-blue-500/15 text-blue-600 dark:text-blue-400" },
 };
 
 function formatEur(n: number) {
-  return new Intl.NumberFormat("nl-NL", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
+  return new Intl.NumberFormat("en-EU", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(n);
 }
 
 interface ComplianceReportProps {
@@ -38,15 +38,15 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-4 p-6 rounded-2xl border bg-card">
         <div className="flex-1">
-          <p className="text-sm text-muted-foreground font-medium mb-1">Risicoclassificatie</p>
+          <p className="text-sm text-muted-foreground font-medium mb-1">Risk Classification</p>
           <RiskBadge level={result.riskLevel} size="lg" />
           <p className="mt-2 text-sm text-muted-foreground">{levelInfo.description}</p>
         </div>
         <div className="hidden sm:block text-right">
-          <p className="text-xs text-muted-foreground mb-1">Geschatte compliance-kosten</p>
+          <p className="text-xs text-muted-foreground mb-1">Estimated compliance cost</p>
           <p className="text-2xl font-bold text-primary">
             {result.estimatedCostRange.low === 0
-              ? "N.v.t."
+              ? "N/A"
               : `${formatEur(result.estimatedCostRange.low)} – ${formatEur(result.estimatedCostRange.high)}`}
           </p>
         </div>
@@ -57,7 +57,7 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <ShieldAlert className="h-4 w-4 text-primary" />
-            Samenvatting
+            Summary
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -72,7 +72,7 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
               <BookOpen className="h-4 w-4 text-primary" />
-              Van toepassing zijnde artikelen
+              Applicable Articles
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -93,7 +93,7 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
               <AlertTriangle className="h-4 w-4 text-orange-500" />
-              Compliance-gaps
+              Compliance Gaps
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -115,7 +115,7 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
               <Lock className="h-4 w-4 text-primary" />
-              Vereiste waarborgen
+              Required Safeguards
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -137,7 +137,7 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
               <ListChecks className="h-4 w-4 text-primary" />
-              Actieplan
+              Action Plan
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -163,23 +163,23 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <EuroIcon className="h-4 w-4 text-primary" />
-            Geschatte compliance-kosten
+            Estimated Compliance Cost
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-2xl font-bold">
             {result.estimatedCostRange.low === 0
-              ? "N.v.t. (verboden gebruik)"
+              ? "N/A (prohibited use)"
               : `${formatEur(result.estimatedCostRange.low)} – ${formatEur(result.estimatedCostRange.high)}`}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Indicatieve schatting op basis van typische audit-, documentatie- en juridische kosten.
+            Indicative estimate based on typical audit, documentation, and legal costs.
           </p>
         </CardContent>
       </Card>
 
       <p className="text-xs text-center text-muted-foreground pb-4">
-        Dit rapport is een indicatieve beoordeling op basis van AI-analyse. Raadpleeg een juridisch adviseur voor definitieve compliance-beslissingen.
+        This report is an indicative assessment based on AI analysis. Consult a legal advisor for definitive compliance decisions.
       </p>
     </div>
   );
