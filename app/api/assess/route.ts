@@ -1,4 +1,5 @@
 import { generateText, Output } from "ai";
+import { anthropic } from "@ai-sdk/anthropic";
 import { NextRequest } from "next/server";
 import { AssessmentSchema, buildAssessmentPrompt } from "@/lib/assessment";
 
@@ -8,14 +9,14 @@ export async function POST(req: NextRequest) {
 
   if (!content || typeof content !== "string" || content.trim().length < 20) {
     return Response.json(
-      { error: "Beschrijving is te kort. Geef minimaal 20 tekens." },
+      { error: "Description is too short. Please provide at least 20 characters." },
       { status: 400 }
     );
   }
 
   try {
     const result = await generateText({
-      model: "anthropic/claude-sonnet-4.6",
+      model: anthropic("claude-sonnet-4-6"),
       output: Output.object({ schema: AssessmentSchema }),
       prompt: buildAssessmentPrompt(content.slice(0, 12000)),
     });
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("[assess] error:", err);
     return Response.json(
-      { error: "Beoordeling mislukt. Probeer het opnieuw." },
+      { error: "Assessment failed. Please try again." },
       { status: 500 }
     );
   }
