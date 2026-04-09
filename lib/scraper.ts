@@ -39,7 +39,7 @@ export function isBlockedUrl(urlString: string): boolean {
 
 export async function scrapeUrl(urlString: string): Promise<string> {
   if (isBlockedUrl(urlString)) {
-    throw new Error("URL niet toegestaan (intern netwerk of ongeldig protocol).");
+    throw new Error("URL not allowed (internal network or invalid protocol).");
   }
 
   const response = await fetch(urlString, {
@@ -49,7 +49,7 @@ export async function scrapeUrl(urlString: string): Promise<string> {
   });
 
   if (!response.ok) {
-    throw new Error(`Kon de pagina niet ophalen (status ${response.status}).`);
+    throw new Error(`Could not fetch the page (status ${response.status}).`);
   }
 
   const html = await response.text();

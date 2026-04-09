@@ -7,11 +7,11 @@ export async function POST(req: NextRequest) {
   const file = formData.get("file");
 
   if (!file || typeof file === "string") {
-    return Response.json({ error: "Geen bestand ontvangen." }, { status: 400 });
+    return Response.json({ error: "No file received." }, { status: 400 });
   }
 
   if (file.size > MAX_BYTES) {
-    return Response.json({ error: "Bestand te groot (max 5 MB)." }, { status: 413 });
+    return Response.json({ error: "File too large (max 5 MB)." }, { status: 413 });
   }
 
   const buffer = Buffer.from(await file.arrayBuffer());
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       text = result.value;
     } else {
       return Response.json(
-        { error: "Bestandstype niet ondersteund. Gebruik PDF, DOCX of TXT." },
+        { error: "File type not supported. Use PDF, DOCX or TXT." },
         { status: 415 }
       );
     }
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     if (text.length < 20) {
       return Response.json(
-        { error: "Niet genoeg tekst gevonden in het bestand." },
+        { error: "Not enough text found in the file." },
         { status: 422 }
       );
     }
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error("[parse] error:", err);
     return Response.json(
-      { error: "Bestand kon niet worden verwerkt." },
+      { error: "File could not be processed." },
       { status: 500 }
     );
   }

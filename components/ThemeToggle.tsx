@@ -18,7 +18,7 @@ export function ThemeToggle() {
       variant="ghost"
       size="icon"
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      aria-label="Wissel thema"
+      aria-label="Toggle theme"
       className="text-foreground/70 hover:text-foreground"
     >
       {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
