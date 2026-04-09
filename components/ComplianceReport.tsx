@@ -77,7 +77,7 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="divide-y divide-border rounded-lg border border-border overflow-hidden">
               {result.applicableArticles.map((a) => {
                 const info = ARTICLE_INFO[a];
                 const Tag = info ? "a" : "div";
@@ -88,23 +88,20 @@ export function ComplianceReport({ result }: ComplianceReportProps) {
                   <Tag
                     key={a}
                     {...linkProps}
-                    className="group flex items-start gap-3 rounded-lg border border-border bg-muted/40 px-3 py-2.5 transition-colors hover:bg-primary/5 hover:border-primary/30 cursor-pointer"
+                    className="group flex items-center justify-between px-4 py-3 bg-card hover:bg-muted/50 transition-colors"
                   >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 border border-primary/20 group-hover:bg-primary/20 transition-colors">
-                      <BookOpen className="h-3.5 w-3.5 text-primary" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-semibold font-mono text-primary leading-tight">
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm font-bold font-mono text-primary w-28 shrink-0">
                         {a}
-                      </p>
+                      </span>
                       {info?.description && (
-                        <p className="text-xs text-muted-foreground mt-0.5 leading-tight">
+                        <span className="text-sm text-muted-foreground">
                           {info.description}
-                        </p>
+                        </span>
                       )}
                     </div>
                     {info && (
-                      <ExternalLink className="h-3 w-3 text-muted-foreground/50 group-hover:text-primary shrink-0 mt-1 transition-colors" />
+                      <ExternalLink className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary shrink-0 ml-3 transition-colors" />
                     )}
                   </Tag>
                 );
