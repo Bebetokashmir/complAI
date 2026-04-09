@@ -7,8 +7,9 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { cn } from "@/lib/utils";
 
 const navLinks = [
-  { href: "/",     label: "AI Act" },
-  { href: "/gdpr", label: "GDPR"   },
+  { href: "/",       label: "AI Act"  },
+  { href: "/gdpr",   label: "GDPR"    },
+  { href: "/expert", label: "Expert"  },
 ];
 
 export function Header() {
